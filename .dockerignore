@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+Dockerfile
+docker-compose*
+.docker/
+
+# Logs
+*.log
+logs/
+
+# Local development
+*.sqlite3
+*.db
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Media and static files
+media/
+static/
+
+# Documentation
+docs/_build/
+site/
+
+# Node modules (if using frontend)
+node_modules/ 
