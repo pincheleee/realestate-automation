@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.core.cache import cache
@@ -12,8 +13,8 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     """Health check endpoint that verifies database and cache connections."""
     try:
         # Check database connection
-        await db.execute("SELECT 1")
-        
+        await db.execute(text("SELECT 1"))
+
         # Check Redis connection
         await cache.redis.ping()
         

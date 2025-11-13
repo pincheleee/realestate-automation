@@ -44,7 +44,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
@@ -54,7 +54,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def remove(self, db: AsyncSession, *, id: int) -> ModelType:
-        obj = await db.get(self.model, id)
-        await db.delete(obj)
-        await db.commit()
+        query = select(self.model).filter(self.model.id == id)
+        result = await db.execute(query)
+        obj = result.scalar_one_or_none()
+        if obj:
+            await db.delete(obj)
+            await db.commit()
         return obj 

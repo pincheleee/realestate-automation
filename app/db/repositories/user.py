@@ -32,7 +32,7 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
     async def update(
         self, db: AsyncSession, *, db_obj: User, obj_in: UserUpdate
     ) -> User:
-        update_data = obj_in.dict(exclude_unset=True)
+        update_data = obj_in.model_dump(exclude_unset=True)
         if "password" in update_data:
             hashed_password = get_password_hash(update_data["password"])
             del update_data["password"]

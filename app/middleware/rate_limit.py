@@ -40,23 +40,22 @@ class RateLimiter:
 
 rate_limiter = RateLimiter()
 
-async def rate_limit_middleware(
-    request: Request,
-    limit: int = 100,
-    window: int = 60,
-    key_prefix: str = "rate_limit",
-):
+async def rate_limit_middleware(request: Request, call_next):
+    limit = 100
+    window = 60
+    key_prefix = "rate_limit"
+
     client_ip = request.client.host
     key = f"{key_prefix}:{client_ip}"
-    
+
     is_limited, remaining = await rate_limiter.is_rate_limited(key, limit, window)
-    
+
     if is_limited:
         raise ForbiddenException("Rate limit exceeded")
-    
-    response = await request.call_next()
+
+    response = await call_next(request)
     response.headers["X-RateLimit-Remaining"] = str(remaining)
     response.headers["X-RateLimit-Limit"] = str(limit)
     response.headers["X-RateLimit-Reset"] = str(int(time.time()) + window)
-    
+
     return response 

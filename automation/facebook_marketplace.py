@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class FacebookMarketplaceBot:
     def __init__(self):
-        self.graph = facebook.GraphAPI(access_token=settings.FACEBOOK_APP_SECRET)
+        self.graph = facebook.GraphAPI(access_token=settings.FACEBOOK_ACCESS_TOKEN)
         self.api_version = settings.FACEBOOK_API_VERSION
 
     async def post_property(self, property_data: Dict) -> Dict:

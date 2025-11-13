@@ -27,11 +27,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # External API Keys
-    FACEBOOK_ACCESS_TOKEN: str
-    CALENDLY_API_KEY: str
-    
+    FACEBOOK_ACCESS_TOKEN: str = ""
+    CALENDLY_API_KEY: str = ""
+
     # Logging Configuration
     LOG_LEVEL: str = "INFO"
+    ENVIRONMENT: str = "development"
     
     class Config:
         case_sensitive = True
@@ -41,7 +42,7 @@ class Settings(BaseSettings):
         super().__init__(**kwargs)
         if not self.SQLALCHEMY_DATABASE_URI:
             self.SQLALCHEMY_DATABASE_URI = (
-                f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
                 f"@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
             )
 

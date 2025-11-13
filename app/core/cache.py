@@ -39,9 +39,13 @@ class RedisCache:
         return bool(await self.redis.exists(key))
 
     async def clear_pattern(self, pattern: str) -> None:
-        keys = await self.redis.keys(pattern)
-        if keys:
-            await self.redis.delete(*keys)
+        cursor = 0
+        while True:
+            cursor, keys = await self.redis.scan(cursor, match=pattern, count=100)
+            if keys:
+                await self.redis.delete(*keys)
+            if cursor == 0:
+                break
 
 cache = RedisCache()
 

@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.security import verify_token
@@ -29,8 +30,10 @@ async def get_current_user(
         token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise credentials_exception
-    
-    user = await db.query(User).filter(User.id == token_data.sub).first()
+
+    query = select(User).filter(User.id == token_data.sub)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
     if user is None:
         raise credentials_exception
     return user

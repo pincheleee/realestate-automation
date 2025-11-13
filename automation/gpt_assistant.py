@@ -29,7 +29,7 @@ class GPTAssistant:
             Include details about the neighborhood, lifestyle benefits, and unique selling points.
             """
 
-            response = await self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional real estate copywriter."},
@@ -73,7 +73,7 @@ class GPTAssistant:
             4. Includes a clear call to action
             """
 
-            response = await self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional real estate agent assistant."},
@@ -116,7 +116,7 @@ class GPTAssistant:
             4. Recommendations for follow-up
             """
 
-            response = await self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a real estate matchmaking expert."},
