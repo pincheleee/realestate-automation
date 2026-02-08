@@ -1,11 +1,13 @@
-from fastapi import Request, HTTPException
-from redis import asyncio as aioredis
-from app.core.config import get_settings
-from app.core.exceptions import ForbiddenException
 import time
-from typing import Optional
+from typing import Optional, Callable
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+from redis import asyncio as aioredis
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.core.config import get_settings
 
 settings = get_settings()
+
 
 class RateLimiter:
     def __init__(self):
@@ -30,33 +32,36 @@ class RateLimiter:
         await self.redis.incr(key)
         return False, limit - current - 1
 
-    async def get_remaining_requests(
-        self, key: str, limit: int, window: int
-    ) -> int:
-        current = await self.redis.get(key)
-        if current is None:
-            return limit
-        return max(0, limit - int(current))
 
 rate_limiter = RateLimiter()
 
-async def rate_limit_middleware(
-    request: Request,
-    limit: int = 100,
-    window: int = 60,
-    key_prefix: str = "rate_limit",
-):
-    client_ip = request.client.host
+
+async def rate_limit_middleware(request: Request, call_next: Callable) -> Response:
+    """ASGI middleware for rate limiting based on client IP."""
+    limit = settings.RATE_LIMIT_PER_MINUTE
+    window = 60
+    key_prefix = "rate_limit"
+
+    client_ip = request.client.host if request.client else "unknown"
     key = f"{key_prefix}:{client_ip}"
-    
+
     is_limited, remaining = await rate_limiter.is_rate_limited(key, limit, window)
-    
+
     if is_limited:
-        raise ForbiddenException("Rate limit exceeded")
-    
-    response = await request.call_next()
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Rate limit exceeded"},
+            headers={
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Limit": str(limit),
+                "X-RateLimit-Reset": str(int(time.time()) + window),
+                "Retry-After": str(window),
+            },
+        )
+
+    response = await call_next(request)
     response.headers["X-RateLimit-Remaining"] = str(remaining)
     response.headers["X-RateLimit-Limit"] = str(limit)
     response.headers["X-RateLimit-Reset"] = str(int(time.time()) + window)
-    
+
     return response 
